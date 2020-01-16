@@ -4,19 +4,19 @@ from network import WLAN
 import machine, time
 import pycom
 import ujson
-pycom.heartbeat(False)
+#pycom.heartbeat(False)
 py = Pysense()
 si = SI7006A20(py)
 
 def main():
     getTemp()
     #connectSink()
-    py.setup_sleep(300)
-    py.go_to_sleep()
+    #py.setup_sleep(20)
+    #py.go_to_sleep()
 
 def getTemp():
     print("Temperature: " + str(si.temperature())+ " deg C and Relative Humidity: " + str(si.humidity()) + " %")
-
+    #time.sleep(10)
 
 def connectSink():
     wlan = WLAN(mode=WLAN.STA)
