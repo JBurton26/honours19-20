@@ -8,15 +8,22 @@ import ujson
 py = Pysense()
 si = SI7006A20(py)
 
+
 def main():
     getTemp()
     #connectSink()
-    #py.setup_sleep(20)
+    #py.setup_sleep(10)
     #py.go_to_sleep()
 
 def getTemp():
-    print("Temperature: " + str(si.temperature())+ " deg C and Relative Humidity: " + str(si.humidity()) + " %")
-    #time.sleep(10)
+    print(si.temperature())
+    #time.sleep(5)
+
+def writeData():
+    f = open('/node1sd/readings.json', 'w')
+    
+    f.close()
+    os.listdir()
 
 def connectSink():
     wlan = WLAN(mode=WLAN.STA)
