@@ -10,10 +10,9 @@ si = SI7006A20(py)
 
 
 def main():
-    while True:
-        writeData()
-        py.setup_sleep(10)
-        py.go_to_sleep()
+    writeData()
+    py.setup_sleep(3600)
+    py.go_to_sleep()
 
 
 def writeData():
@@ -24,11 +23,7 @@ def writeData():
     #print(jsons)
     with open('/node1sd/readings.json', 'w+') as f:
         f.write(json.dumps(jsons))
-    time.sleep(10)
-
-    #with open('/node1sd/readings.json', 'w') as f:
-        #ujson.dump(jsonData, f)
-    #os.listdir()
+    time.sleep(30)
 
 def connectSink():
     wlan = WLAN(mode=WLAN.STA)
@@ -45,4 +40,5 @@ def connectSink():
             break
 
 if __name__ == "__main__":
-    main()
+    while True:
+        main()
