@@ -10,22 +10,18 @@ si = SI7006A20(py)
 
 
 def main():
-    #getTemp()
-    writeData()
-    #connectSink()
-    #py.setup_sleep(10)
-    #py.go_to_sleep()
+    while True:
+        writeData()
+        py.setup_sleep(10)
+        py.go_to_sleep()
 
-def getTemp():
-    print(si.temperature())
-    #time.sleep(5)
 
 def writeData():
     jdict = {'temp': si.temperature(), 'time': rtc.now()}
     with open('/node1sd/readings.json', 'r') as file:
         jsons = json.load(file)
     jsons["readings"].append(jdict)
-    print(jsons)
+    #print(jsons)
     with open('/node1sd/readings.json', 'w+') as f:
         f.write(json.dumps(jsons))
     time.sleep(10)
