@@ -4,27 +4,33 @@ from network import WLAN
 import machine, time
 import pycom
 import json
-#pycom.heartbeat(False)
+pycom.heartbeat(False)
 py = Pysense()
 si = SI7006A20(py)
-
+waketime = time.time()+10
 
 def main():
+    global waketime
     writeData()
-    py.setup_sleep(3600)
-    py.go_to_sleep()
+    #print("Going to Sleep")
+    while True:
+        machine.idle()
+        if(time.time() >= waketime):
+            waketime = time.time()+300
+            break
 
-
+#Takes a reading and adds it to 'readings.json' found on the SD card
 def writeData():
-    jdict = {'temp': si.temperature(), 'time': rtc.now()}
+    jdict = {'temp': si.temperature(), 'hum': si.humidity(), 'time': time.localtime()}
     with open('/node1sd/readings.json', 'r') as file:
         jsons = json.load(file)
     jsons["readings"].append(jdict)
-    #print(jsons)
     with open('/node1sd/readings.json', 'w+') as f:
         f.write(json.dumps(jsons))
-    time.sleep(30)
+    #print(jdict)
+    #time.sleep(30)
 
+#Connection for a set network to be changed later
 def connectSink():
     wlan = WLAN(mode=WLAN.STA)
     print()
@@ -39,6 +45,7 @@ def connectSink():
             #print(net.ssid)
             break
 
+#Loops the main method which calls the other methods
 if __name__ == "__main__":
     while True:
         main()
