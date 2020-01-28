@@ -1,9 +1,9 @@
 from pysense import Pysense
 from SI7006A20 import SI7006A20
 from network import WLAN
-import machine, time
-import pycom
-import json
+import machine, time, pycom, json
+#import pycom
+#import json
 pycom.heartbeat(False)
 py = Pysense()
 si = SI7006A20(py)
@@ -21,13 +21,13 @@ def main():
 
 #Takes a reading and adds it to 'readings.json' found on the SD card
 def writeData():
-    jdict = {'temp': si.temperature(), 'hum': si.humidity(), 'time': time.localtime()}
     with open('/node1sd/readings.json', 'r') as file:
         jsons = json.load(file)
+    jdict = {'id': len(jsons['readings']),'temp': si.temperature(), 'hum': si.humidity(), 'time': time.localtime()}
     jsons["readings"].append(jdict)
     with open('/node1sd/readings.json', 'w+') as f:
         f.write(json.dumps(jsons))
-    #print(jdict)
+    print(jdict)
     #time.sleep(30)
 
 #Connection for a set network to be changed later
