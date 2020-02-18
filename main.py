@@ -7,17 +7,18 @@ import machine, time, pycom, json
 pycom.heartbeat(False)
 py = Pysense()
 si = SI7006A20(py)
-waketime = time.time()+10
+waketime = time.time()+30
 
 def main():
     global waketime
-    writeData()
+    #writeData()
     #print("Going to Sleep")
     while True:
         machine.idle()
         if(time.time() >= waketime):
-            waketime = time.time()+300
+            waketime = time.time()+30
             break
+
 
 #Takes a reading and adds it to 'readings.json' found on the SD card
 def writeData():
