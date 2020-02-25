@@ -1,5 +1,6 @@
 from pysense import Pysense
 from SI7006A20 import SI7006A20
+from mqtt import MQTTClient
 from network import WLAN
 import machine, time, pycom, json
 #import pycom
@@ -12,6 +13,7 @@ waketime = time.time()+30
 def main():
     global waketime
     #writeData()
+    connectSink()
     #print("Going to Sleep")
     while True:
         machine.idle()
@@ -40,11 +42,21 @@ def connectSink():
         if (net.ssid=="Optify_0C81"):
             print("Network Found")
             wlan.connect(net.ssid, auth=(net.sec, "AUQBNHECTR"), timeout=5000)
-            while not wlan.isconnected():
+            while not wlan.isconnected(): #Fix so time is taken
                 print(".")
                 machine.idle() # This linemakes it save soem power
             #print(net.ssid)
             break
+    with open('/node1sd/readings.json', 'r') as file:
+        jsons = json.load(file)
+    client = jsons["name"]
+    print(client)
+    mqttcli = MQTTClient(client,"broker.shiftr.io",user="jbhonstester",password="jons00__11", port=1883);
+    mqttcli.connect()
+    with open('/node1sd/readings.json', 'r') as file:
+        jsons = json.load(file)
+    for reading in jsons["readings"]:
+        print(1)    
 
 #Loops the main method which calls the other methods
 if __name__ == "__main__":
