@@ -1,8 +1,8 @@
 # boot.py -- run on boot-up
-import os, machine
-#os.mkfs('/flash')
-#print("Wake Trigger")
+import os, machine,time
+from network import WLAN
 sd = machine.SD()
 rtc = machine.RTC()
-rtc.init((2020,1,21,17,45,0,0,0))
-os.mount(sd,'/node1sd')
+rtc.init((2020,3,14,20,50,0,0,0))
+os.mount(sd,'/nodesd')
+print("BOOTING")

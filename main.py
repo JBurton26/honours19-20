@@ -1,48 +1,98 @@
 from pysense import Pysense
 from SI7006A20 import SI7006A20
+from mqtt import MQTTClient
 from network import WLAN
-import machine, time
-import pycom
-import json
-#pycom.heartbeat(False)
-py = Pysense()
-si = SI7006A20(py)
+import machine, time, pycom, json
+from machine import Pin
+pycom.heartbeat(False)
+
+#########
+def sub_cb(topic, msg):
+   print(msg)
+   publisher(topic, msg)
+
+#Takes a reading and adds it to 'readings.json' found on the SD card
+def writeData():
+    with open('/nodesd/readings.json', 'r') as file:
+        jsons = json.load(file)
+    jdict = {'id': len(jsons['readings']),'type':'Temperature', 'value': si.temperature(), 'timestamp': time.localtime()}
+    jsons["readings"].append(jdict)
+    jdict = {'id': len(jsons['readings']),'type':'Humidity', 'value': si.humidity(), 'timestamp': time.localtime()}
+    jsons["readings"].append(jdict)
+    with open('/nodesd/readings.json', 'w+') as f:
+        f.write(json.dumps(jsons))
+    print("Taking Reading")
+    return
+
+#Connection for a set network to be changed later
+def connectSink(p):
+    nets=wlan.scan()
+    for net in nets:
+        if (net.ssid=="jakepitest"):
+            print("Network Found")
+            wlan.connect(net.ssid, auth=(net.sec, "jbpi1234"), timeout=5000)
+            while not wlan.isconnected(): #Fix so time is taken
+                print(".")
+                machine.idle() # This linemakes it save soem power
+            break
+    if(net.ssid=="jakepitest"):
+        with open('/nodesd/readings.json', 'r') as file:
+            jsons = json.load(file)
+        client = jsons["name"]
+        print(client)
+        mqttcli.set_callback(sub_cb)
+        mqttcli.connect()
+        mqttcli.subscribe(client)
+        jlast = {'name':client}
+        mqttcli.publish(topic="lastread", msg=json.dumps(jlast))
+        mqttcli.wait_msg()
+        waitfor = time.time()+180
+        while True:
+            if(time.time() >= waitfor):
+                machine.idle()
+                break
+        wlan.disconnect()
+
+def publisher(topic, msg):
+    with open('/nodesd/readings.json', 'r') as file:
+        jsons = json.load(file)
+    msgstr = msg.decode('utf-8')
+    print(msgstr)
+    msgjson = json.loads(msgstr)
+    print(msgjson['reading_id'])
+    for reading in jsons['readings']:
+        if reading['id'] < msgjson['reading_id']:
+            continue
+        newRead = reading
+        newRead['name'] = jsons['name']
+        mqttcli.publish(topic="test",msg=json.dumps(newRead))
+        time.sleep(0.01)
+    mqttcli.disconnect()
+    if(wlan.isconnected()):
+        wlan.disconnect()
 
 
 def main():
+    global waketime
+    writeData()
     while True:
-        writeData()
-        py.setup_sleep(10)
-        py.go_to_sleep()
-
-
-def writeData():
-    jdict = {'temp': si.temperature(), 'time': rtc.now()}
-    with open('/node1sd/readings.json', 'r') as file:
-        jsons = json.load(file)
-    jsons["readings"].append(jdict)
-    #print(jsons)
-    with open('/node1sd/readings.json', 'w+') as f:
-        f.write(json.dumps(jsons))
-    time.sleep(10)
-
-    #with open('/node1sd/readings.json', 'w') as f:
-        #ujson.dump(jsonData, f)
-    #os.listdir()
-
-def connectSink():
-    wlan = WLAN(mode=WLAN.STA)
-    print()
-    nets=wlan.scan()
-    for net in nets:
-        if (net.ssid=="Optify_0C81"):
-            print("Network Found")
-            wlan.connect(net.ssid, auth=(net.sec, "AUQBNHECTR"), timeout=5000)
-            while not wlan.isconnected():
-                print(".")
-                machine.idle() # This linemakes it save soem power
-            #print(net.ssid)
+        machine.idle()
+        if(time.time() >= waketime):
+            waketime = time.time()+600
             break
 
+#Loops the main method which calls the other methods
 if __name__ == "__main__":
-    main()
+    wlan = WLAN(mode=WLAN.STA)
+    py = Pysense()
+    si = SI7006A20(py)
+    waketime = time.time()+30
+    pinterrupt = Pin('P14', mode=Pin.IN, pull=Pin.PULL_UP)
+    pinterrupt.callback(Pin.IRQ_RISING,connectSink)
+    with open('/nodesd/readings.json', 'r') as file:
+        jsons = json.load(file)
+    client = jsons['name']
+    mqttcli = MQTTClient(client,"192.168.10.1",user="jakepi",password="jbpi1234", port=1883)
+    mqttcli.set_callback(sub_cb)
+    while True:
+        main()

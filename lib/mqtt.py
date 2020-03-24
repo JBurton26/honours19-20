@@ -61,7 +61,7 @@ class MQTTClient:
         self.lw_qos = qos
         self.lw_retain = retain
 
-    def connect(self, clean_session=True):
+    def connect(self, clean_session=False):
         self.sock = socket.socket()
         self.sock.connect(self.addr)
         if self.ssl:
@@ -199,4 +199,3 @@ class MQTTClient:
     def check_msg(self):
         self.sock.setblocking(False)
         return self.wait_msg()
-
