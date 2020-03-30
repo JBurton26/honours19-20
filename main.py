@@ -5,13 +5,24 @@ from network import WLAN
 import machine, time, pycom, json
 from machine import Pin
 pycom.heartbeat(False)
-
+#########
+#Jake Burton
+#40278490
+#Final Honours Project
+#########
+# - todo Delete old readings so that the loop within the publisher method doesnt have to iterate through
+#           thousands of messages before sending anything.
+# - todo Purtify code and sort documentation
+#########
+#Subscription message handler
+#Deals with incoming messages
 #########
 def sub_cb(topic, msg):
    print(msg)
    publisher(topic, msg)
-
+#########
 #Takes a reading and adds it to 'readings.json' found on the SD card
+#########
 def writeData():
     with open('/nodesd/readings.json', 'r') as file:
         jsons = json.load(file)
@@ -23,8 +34,10 @@ def writeData():
         f.write(json.dumps(jsons))
     print("Taking Reading")
     return
-
-#Connection for a set network to be changed later
+#########
+#Connection to a hardcoded network, sends the initial message that deals with
+#the last reading that the sink received
+#########
 def connectSink(p):
     nets=wlan.scan()
     for net in nets:
@@ -52,7 +65,11 @@ def connectSink(p):
                 machine.idle()
                 break
         wlan.disconnect()
-
+#########
+#Publisher method
+#Takes the arguments fromthe subscription message handler and uses them to determine
+#which messages to send to the sink
+#########
 def publisher(topic, msg):
     with open('/nodesd/readings.json', 'r') as file:
         jsons = json.load(file)
@@ -66,12 +83,13 @@ def publisher(topic, msg):
         newRead = reading
         newRead['name'] = jsons['name']
         mqttcli.publish(topic="test",msg=json.dumps(newRead))
-        time.sleep(0.01)
+        #time.sleep(0.05)
     mqttcli.disconnect()
     if(wlan.isconnected()):
         wlan.disconnect()
-
-
+#########
+#Main Method, calls reading method then idles to save some power
+#########
 def main():
     global waketime
     writeData()
@@ -80,13 +98,15 @@ def main():
         if(time.time() >= waketime):
             waketime = time.time()+600
             break
-
+#########
 #Loops the main method which calls the other methods
+#Initialises all of the necessary variables for the normal function of the node
+#########
 if __name__ == "__main__":
     wlan = WLAN(mode=WLAN.STA)
     py = Pysense()
     si = SI7006A20(py)
-    waketime = time.time()+30
+    waketime = time.time()+300
     pinterrupt = Pin('P14', mode=Pin.IN, pull=Pin.PULL_UP)
     pinterrupt.callback(Pin.IRQ_RISING,connectSink)
     with open('/nodesd/readings.json', 'r') as file:

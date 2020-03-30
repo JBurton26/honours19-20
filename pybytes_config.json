@@ -1,1 +1,1 @@
-{"network_preferences": ["wifi"], "device_id": "7c5027ec-b48f-45f5-b56d-6663fe551e4c", "server": "mqtt.pybytes.pycom.io", "pybytes_autostart": false, "username": "pavlosgiannarakis@outlook.com", "wlan_antenna": 0, "wifi": {"ssid": "fipy-wlan-f14c", "password": "www.pycom.io"}, "ota_server": {"port": 443, "domain": "software.pycom.io"}, "cfg_msg": "Using configuration from config block, written with FW updater"}
+
