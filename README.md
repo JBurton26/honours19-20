@@ -7,4 +7,4 @@ Sink project counterpart found [here](https://github.com/JBurton26/RasPiHomeProj
 BURTON, JAKE
 40278490
 
-Decommissioned Sink Prototype code can be found [here](Sink project counterpart found [here](https://github.com/JBurton26/honours19-20sink "Old Sink")) 
+Decommissioned Sink Prototype code can be found [here](https://github.com/JBurton26/honours19-20sink "Old Sink")
